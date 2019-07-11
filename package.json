@@ -1,23 +1,16 @@
 {
-  "name": "chatbotdialogflowpj",
-  "version": "0.0.0",
-  "private": true,
-  "scripts": {
-    "start": "node ./bin/www"
-  },
-  "dependencies": {
-    "actions-on-google": "^2.8.0",
-    "axios": "^0.19.0",
-    "cookie-parser": "^1.4.4",
-    "dateformat": "^3.0.3",
-    "debug": "~2.6.9",
-    "dialogflow-fulfillment": "^0.6.1",
-    "express": "~4.16.1",
-    "http-errors": "^1.6.3",
-    "jade": "~1.11.0",
-    "morgan": "~1.9.1",
-    "request": "^2.88.0",
-    "request-promise-native": "^1.0.7",
-    "simplecrawler": "^1.1.8"
-  }
+    "name": "chatbot",
+    "version": "0.0.1",
+    "description": "Test Agent webhook",
+    "main": "index.js",
+    "author": "Abhinav Tyagi, New Delhi, India",
+    "dependencies": {
+        "dialogflow-fulfillment": "^0.4.1",
+        "body-parser": "^1.18.3",
+        "express": "^4.16.3",
+        "actions-on-google": "^2.2.0"
+    },
+    "scripts": {
+        "start": "node ./index.js"
+    }
 }

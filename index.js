@@ -3,6 +3,7 @@
 const {WebhookClient} = require('dialogflow-fulfillment');
 const express = require('express');
 const bodyParser = require('body-parser');
+const {makeReservation} = require('./makeflight');
 
 const app = express();
 app.use(bodyParser.json());
@@ -20,12 +21,12 @@ function fallback (agent) {
 }
 
 function WebhookProcessing(req, res) {
+    console.log('Hit');
     const agent = new WebhookClient({request: req, response: res});
-    console.info(`agent set`);
-
     let intentMap = new Map();
     intentMap.set('Default Welcome Intent', welcome);
     intentMap.set('Default Fallback Intent', fallback);
+    intentMap.set('Make Reservation', makeReservation);
 // intentMap.set('<INTENT_NAME_HERE>', yourFunctionHandler);
     agent.handleRequest(intentMap);
 }

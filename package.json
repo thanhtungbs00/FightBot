@@ -5,10 +5,11 @@
     "main": "index.js",
     "author": "Abhinav Tyagi, New Delhi, India",
     "dependencies": {
-        "dialogflow-fulfillment": "^0.4.1",
+        "actions-on-google": "^2.2.0",
         "body-parser": "^1.18.3",
+        "dialogflow-fulfillment": "^0.4.1",
         "express": "^4.16.3",
-        "actions-on-google": "^2.2.0"
+        "mongoose": "^5.6.4"
     },
     "scripts": {
         "start": "node ./index.js"

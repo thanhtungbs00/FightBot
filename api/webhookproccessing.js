@@ -3,7 +3,7 @@ const { WebhookClient } = require('dialogflow-fulfillment');
 
 // processing by function
 const {makeReservation, selectFlight} = require('./makeflight');
-
+const   {getTicket} = require('./changeinfo');
 process.env.DEBUG = 'dialogflow:debug'; // enables lib debugging statements
 
 function welcome(agent) {
@@ -22,9 +22,12 @@ module.exports = {
         
         intentMap.set('Default Welcome Intent', welcome);
         intentMap.set('Default Fallback Intent', fallback);
+
         intentMap.set('Make Reservation', makeReservation);
         intentMap.set('Make Reservation - select.number', selectFlight)
-        intentMap.set('', makeReservation);
+        
+        // change proceesing
+        intentMap.set('getTicket', getTicket);
 
         agent.handleRequest(intentMap);
     }

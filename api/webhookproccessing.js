@@ -1,9 +1,10 @@
 const   { WebhookClient } = require('dialogflow-fulfillment');
-//const   { Carousel } = require('actions-on-google');
+const   { Carousel } = require('actions-on-google');
 
 // processing by function
 const   {makeReservation, selectFlight} = require('./makeflight');
-const   {getTicket, changeFlight} = require('./changeinfo');
+const   {getTicket, makeChange} = require('./makechange');
+
 process.env.DEBUG = 'dialogflow:debug'; // enables lib debugging statements
 
 function welcome(agent) {
@@ -27,8 +28,8 @@ module.exports = {
         intentMap.set('Make Reservation - select.number', selectFlight)
         
         // change proceesing
-        intentMap.set('user.ask.getticket', getTicket);
-        intentMap.set('user.changeFlight', changeFlight);
+        intentMap.set('user.getticket', getTicket);
+        intentMap.set('user.makechange', makeChange);
         
         agent.handleRequest(intentMap);
     }

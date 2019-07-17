@@ -2,42 +2,29 @@ const   { Card, Suggestion, Button } = require('dialogflow-fulfillment');
 const   Flight = require('../model/filght');
 const   Ticket = require('../model/ticket');
 
-//TODO: Test code and test various api in gg
-
 function getTicket(agent) {
-    let ticket;
-    try {
-        ticket = new Ticket({
-            username: "Cao Thanh Tung",
-            email: "cs.tungthanh@gmail.com",
-            day: "10-7-2018",
-            description: "Come back home with girlfriend",
-            passcode: "VJ5498"
-        });
-        console.log(ticket);
-        
-        // save down database
-        Ticket.create(ticket);
-        
-    } catch (e){
-        console.log(e);
-        return;
-    }
-    agent.add(`okay, I miss you`);
+    let passcode = agent.parameters.ID_ticket;
+
+    agent.add(`okay, your ticket is ${passcode}`);
+    
 }
 
-function changeFlight (agent){
-    agent.add(`Okay, Can you give me some information of your ticket like your ID or passcode of ticket.`);
+function makeChange (agent){
+    agent.add(`Okay, Can you give me some information of your ticket like your ID or passcode flight.`);
+    
+    agent.setContext({
+        'name':'makechange',
+        'lifespan': 5,
+        'parameters':{}
+      });
 }
 
 module.exports = {
     getTicket,
-    changeFlight
+    makeChange
 }
 
-const   imageUrl = 'https://developers.google.com/actions/images/badges/XPM_BADGING_GoogleAssistant_VER.png';
-const   imageUrl2 = 'https://lh3.googleusercontent.com/Nu3a6F80WfixUqf_ec_vgXy_c0-0r4VLJRXjVFF_X_CIilEu8B9fT35qyTEj_PEsKw';
-const   linkUrl = 'https://assistant.google.com/';
+
 // function other(agent) {
 //     agent.add(`This message is from Dialogflow's Cloud Functions for Firebase editor!`);
 //     agent.add(new Card({
@@ -71,3 +58,22 @@ const   linkUrl = 'https://assistant.google.com/';
 // }
 
 
+// let ticket;
+//     try {
+//         ticket = new Ticket({
+//             username: "Cao Thanh Tung",
+//             email: "cs.tungthanh@gmail.com",
+//             day: "10-7-2018",
+//             description: "Come back home with girlfriend",
+//             passcode: "VJ5498"
+//         });
+//         console.log(ticket);
+        
+//         // save down database
+//         //Ticket.create(ticket);
+
+//     } catch (e){
+//         //console.log(e);
+//         alert(`Cannot connect with database`);
+//         return;
+//     }

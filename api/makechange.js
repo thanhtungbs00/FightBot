@@ -1,12 +1,23 @@
 const   { Card, Suggestion, Button } = require('dialogflow-fulfillment');
-const   Flight = require('../model/filght');
-const   Ticket = require('../model/ticket');
+const   Flight = require('../models/Flight');
+const   Ticket = require('../models/Ticket');
 
-function getTicket(agent) {
-    let passcode = agent.parameters.ID_ticket;
-
-    agent.add(`okay, your ticket is ${passcode}`);
-    
+async function getTicket(agent) {
+    let passcode = agent.parameters.any;
+    let ticket;
+    try{
+        ticket = await Ticket.findOne({'passcode': passcode});
+        if (ticket){
+            console.log(ticket);
+            agent.add(`okay, your ticket is ${passcode}`);
+        }
+        else {
+            agent.add("I don't find your passcode in transaction history. Can you give me again");
+        }
+    } catch (e) {
+        console.log(e);
+        return;
+    }
 }
 
 function makeChange (agent){
@@ -19,10 +30,28 @@ function makeChange (agent){
       });
 }
 
-module.exports = {
-    getTicket,
-    makeChange
+function setMappingChange(intentMap) {
+    intentMap.set('user.getticket', getTicket);
+    intentMap.set('user.makechange', makeChange);
 }
+
+module.exports = {
+    setMappingChange
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // function other(agent) {

@@ -5,7 +5,7 @@ const FlightSchema = new Schema({
     flightId:String,
     src: String,
     dst: String,
-    dtime: Date,
+    dtime: Date, 
     atime: Date,
     tseat: Number,
     bseat: Number

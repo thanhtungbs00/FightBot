@@ -2,7 +2,13 @@ const mongoose = require('mongoose');
 const { Card, Suggestion} = require('dialogflow-fulfillment');
 const dateformat = require('dateformat');
 const {Flight, FlightSchema} = require('../models/Flight');
+const Ticket = require('../models/Ticket');
 
+
+
+function randomNum(a, b) {
+  return Math.floor(Math.random() * (b - a)) + a;
+}
 
 function findFlight(agent, src, dst, time) {
   // Get flights from databases
@@ -26,13 +32,13 @@ function findFlight(agent, src, dst, time) {
       // if empty -> Insert dummy data
       if (flights.length === 0) {
         for (var  i = 0  ; i < 5 ; ++i) {
-          var _flightId = 'VN' + (Math.floor(Math.random() * 8999) + 1000);
+          var _flightId = 'VN' + randomNum(1000, 9999);
           var _dtime = new Date(time);
           _dtime.setHours(stime.getHours() + 3 + i*2);
           var _atime = new Date(_dtime);
           _atime.setHours(_dtime.getHours() + 1);
-          var _tseat = Math.floor(Math.random() * 100) + 100
-          var _bseat = Math.floor(Math.random() * 100);
+          var _tseat = randomNum(100, 200);
+          var _bseat = randomNum(0, 100);
           var _f = {flightId: _flightId, src: src, dst: dst, tseat: _tseat, bseat: _bseat, dtime: _dtime, atime: _atime};
           flights.push(_f);
           var fObj = new Flight(_f);
@@ -122,6 +128,15 @@ function selectFlight(agent) {
     agent.add(`Select flight ${chflight.flightId}`);
     agent.add(`Flight will start at ${chflight.src} in ${dateformat(chflight.dtime, "yyyy-mm-dd h:MM:ss")} and arrive at ${chflight.dst} in ${dateformat(chflight.atime, "yyyy-mm-dd h:MM:ss")}`);
     agent.add(`Would you like to confirm this reservation?`);
+    var params = [];
+    if (agent.getContext('makereservation-selectnumber-followup') != undefined) {
+      params = {...agent.getContext('makereservation-selectnumber-followup').parameters};
+    }
+    agent.setContext({
+      'name': 'makereservation-selectnumber-followup',
+      'lifespan': 2,
+      'parameters': {...params, flightId: chflight.flightId}
+    })
     agent.setContext({
       'name': 'MakeReservation-followup',
       'lifespan': -1,
@@ -133,13 +148,25 @@ function selectFlight(agent) {
 } 
 
 function confirmFlight(agent) {
-  // var flightId = agent.getContext('makereservation-followup').parameters.flightId;
-  // var available_flights = agent.getContext('makereservation-followup').parameters.flights;
-  agent.add('Confirmed. Thank you');
-  agent.setContext({
-    'name': 'makereservation-selectnumber-followup',
-    'lifespan': -1
+  var context = agent.getContext('makereservation-selectnumber-followup');
+  var flightId = 'emp';
+  console.log(context);
+  if (context != undefined) {
+    flightId = context.parameters.flightId;
+  }
+  let tick = new Ticket({email: agent.parameters.email, day: new Date(), description: 'Empty', flightId: flightId});
+  return tick.save().then((obj) => {
+    agent.setContext({
+      'name': 'makereservation-selectnumber-followup',
+      'lifespan': -1
+    })
+    agent.add(`Confirmed. Your passcode is ${obj.passcode}`);
+  }).catch(err => {
+    console.log(err);
   })
+  
+  
+  
   
 }
 
@@ -167,7 +194,7 @@ function selectFlightRepeat(agent) {
 function setMappingReser(intentMap) {
   intentMap.set('Make Reservation', makeReservation);
   intentMap.set('Make Reservation - select.number', selectFlight)
-  intentMap.set('Make Reservation - select.number - yes', confirmFlight);
+  intentMap.set('Make Reservation - select.number - email', confirmFlight);
   intentMap.set('Make Reservation - select.number - no', confirmFlightNo);
   intentMap.set('Make Reservation - repeat', selectFlightRepeat);
 }

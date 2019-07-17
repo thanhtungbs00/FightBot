@@ -7,12 +7,9 @@ const {Flight, FlightSchema} = require('../models/Flight');
 
 // Make Reservation
 function makeReservation(agent) {
-    var lstFlights = ['VN123'.toLowerCase(), 'VN122'.toLowerCase(), 'VN124'.toLowerCase()];
     var src = agent.parameters.flightdest;
     var dst = agent.parameters.flightdest2;
     var time = agent.parameters.date;
-
-    
 
     var stime = new Date(time);
     stime.setHours(stime.getHours());
@@ -26,18 +23,6 @@ function makeReservation(agent) {
         $lt:  etime
       }
     };
-
-    agent.setContext({
-      'name': 'MakeReservation-followup',
-      'lifespan': agent.getContext('makereservation-followup').lifespan,
-      'parameters': {
-        ...agent.getContext('makereservation-followup').parameters,
-        flights: lstFlights,
-        src: src,
-        dst: dst,
-        time: time
-      }
-    });
     
     // Get flights from databases
     return Flight.find(query).then(
@@ -63,6 +48,18 @@ function makeReservation(agent) {
           }
         }
 
+        agent.setContext({
+          'name': 'MakeReservation-followup',
+          'lifespan': agent.getContext('makereservation-followup').lifespan + 1,
+          'parameters': {
+            ...agent.getContext('makereservation-followup').parameters,
+            flights: flights,
+            src: src,
+            dst: dst,
+            time: time
+          }
+        });
+
 
           for (var i = 0 ; i < flights.length; ++i) {
             var f = flights[i];
@@ -73,7 +70,7 @@ function makeReservation(agent) {
             }
             
               agent.add(new Card({
-                title: `Flight ${f.flightId.toUpperCase()}`,
+                title: `Flight ${f.flightId}`,
                 imageUrl: 'https://developers.google.com/actions/assistant.png',
                 text: `${f.src} (${dtime}) -> ${f.dst} (${atime})`,
                 buttonText: 'This is a button',
@@ -94,9 +91,25 @@ function makeReservation(agent) {
 
 }
 
+function selectFlightFallback(agent) {
+  agent.add("Sorry. I don't understand your request");
+}
+
 function selectFlight(agent) {
     
-    var flightId = agent.parameters.flightId;
+    var flightId = agent.parameters.flightId.toUpperCase();
+    var flights = agent.getContext('makereservation-followup').parameters.flights;
+    var valid = false;
+    var chflight;
+    for (var i = 0 ; i < flights.length ; ++i) {
+      if (flights[i].flightId === flightId) {
+        valid = true;
+        chflight = flights[i]
+      }
+    }
+    if (!valid) {
+      return selectFlightFallback(agent);
+    }
     agent.setContext({
       'name': 'MakeReservation-followup',
       'lifespan': -1,
@@ -104,10 +117,9 @@ function selectFlight(agent) {
         ...agent.getContext('makereservation-followup').parameters
       }
     });
-    var params = agent.getContext('makereservation-followup').parameters;
     // TODO: Show information, ask for confirmation
-    agent.add(`Select flight ${flightId}`);
-    agent.add(`Flight ${flightId} will start at {} at ${params.src} and arrive at ${params.dst} in ${params.time}`);
+    agent.add(`Select flight ${chflight.flightId}`);
+    agent.add(`Flight will start at ${chflight.src} in ${dateformat(chflight.dtime, "yyyy-mm-dd h:MM:ss")} and arrive at ${chflight.dst} in ${dateformat(chflight.atime, "yyyy-mm-dd h:MM:ss")}`);
     agent.add(`Would you like to confirm this reservation?`);
     agent.setContext({
       'name': 'MakeReservation-followup',

@@ -3,6 +3,8 @@ const { Card, Suggestion} = require('dialogflow-fulfillment');
 const dateformat = require('dateformat');
 const {Flight, FlightSchema} = require('../models/Flight');
 
+
+
 // Make Reservation
 function makeReservation(agent) {
     var lstFlights = ['VN123'.toLowerCase(), 'VN122'.toLowerCase(), 'VN124'.toLowerCase()];
@@ -10,17 +12,7 @@ function makeReservation(agent) {
     var dst = agent.parameters.flightdest2;
     var time = agent.parameters.date;
 
-    agent.setContext({
-      'name': 'MakeReservation-followup',
-      'lifespan': agent.getContext('makereservation-followup').lifespan,
-      'parameters': {
-        ...agent.getContext('makereservation-followup').parameters,
-        flights: lstFlights,
-        src: src,
-        dst: dst,
-        time: time
-      }
-    });
+    
 
     var stime = new Date(time);
     stime.setHours(stime.getHours());
@@ -35,26 +27,71 @@ function makeReservation(agent) {
       }
     };
 
-    console.log(query);
+    agent.setContext({
+      'name': 'MakeReservation-followup',
+      'lifespan': agent.getContext('makereservation-followup').lifespan,
+      'parameters': {
+        ...agent.getContext('makereservation-followup').parameters,
+        flights: lstFlights,
+        src: src,
+        dst: dst,
+        time: time
+      }
+    });
+    
+    // Get flights from databases
+    return Flight.find(query).then(
+      (flights) => {
+        // if empty -> Insert dummy data
+        if (flights.length === 0) {
+          for (var  i = 0  ; i < 5 ; ++i) {
+            var _flightId = 'VN' + (Math.floor(Math.random() * 8999) + 1000);
+            var _dtime = new Date(time);
+            _dtime.setHours(stime.getHours() + 3 + i*2);
+            var _atime = new Date(_dtime);
+            _atime.setHours(_dtime.getHours() + 1);
+            var _tseat = Math.floor(Math.random() * 100) + 100
+            var _bseat = Math.floor(Math.random() * 100);
+            var _f = {flightId: _flightId, src: src, dst: dst, tseat: _tseat, bseat: _bseat, dtime: _dtime, atime: _atime};
+            flights.push(_f);
+            var fObj = new Flight(_f);
+            fObj.save((err, obj) => {
+              if (err) {
+                console.log(err);
+              }
+            })
+          }
+        }
 
-    Flight.find(query, (error, flights) => {
-      console.log(flights);
-    })
 
+          for (var i = 0 ; i < flights.length; ++i) {
+            var f = flights[i];
+            var dtime = dateformat(f.dtime, "yyyy-mm-dd h:MM:ss");
+            var atime = dateformat(f.atime, "yyyy-mm-dd h:MM:ss");
+            if (i == 0) {
+              agent.add('Here are some flight for you!');
+            }
+            
+              agent.add(new Card({
+                title: `Flight ${f.flightId.toUpperCase()}`,
+                imageUrl: 'https://developers.google.com/actions/assistant.png',
+                text: `${f.src} (${dtime}) -> ${f.dst} (${atime})`,
+                buttonText: 'This is a button',
+                buttonUrl: 'https://assistant.google.com/'
+              })
+            );
+        }
 
+        
+      }
+    ).catch( err => {
+      console.log(err);
+    });
 
-    agent.add('Here are some flight for you!');
-    for (num in lstFlights) {
-      agent.add(new Card({
-        title: `Flight ${lstFlights[num].toUpperCase()}`,
-        imageUrl: 'https://developers.google.com/actions/assistant.png',
-        text: 'This is the body text of a card.  You can even use line\n  breaks and emoji! 💁',
-        buttonText: 'This is a button',
-        buttonUrl: 'https://assistant.google.com/'
-      })
-    );
+    
 
-    }
+    
+
 }
 
 function selectFlight(agent) {

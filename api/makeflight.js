@@ -84,11 +84,6 @@ function makeReservation(agent) {
     ).catch( err => {
       console.log(err);
     });
-
-    
-
-    
-
 }
 
 function selectFlightFallback(agent) {

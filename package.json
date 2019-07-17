@@ -3,7 +3,7 @@
     "version": "0.0.1",
     "description": "Test Agent webhook",
     "main": "index.js",
-    "author": "Abhinav Tyagi, New Delhi, India",
+    "author": "Team Intership",
     "dependencies": {
         "actions-on-google": "^2.2.0",
         "body-parser": "^1.18.3",
@@ -14,6 +14,6 @@
         "nodemon": "^1.19.1"
     },
     "scripts": {
-        "start": "nodemon ./index.js"
+        "start": "nodemon index.js"
     }
 }

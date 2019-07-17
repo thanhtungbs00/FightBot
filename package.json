@@ -7,11 +7,13 @@
     "dependencies": {
         "actions-on-google": "^2.2.0",
         "body-parser": "^1.18.3",
+        "dateformat": "^3.0.3",
         "dialogflow-fulfillment": "^0.4.1",
         "express": "^4.16.3",
-        "mongoose": "^5.6.4"
+        "mongoose": "^5.6.4",
+        "nodemon": "^1.19.1"
     },
     "scripts": {
-        "start": "node ./index.js"
+        "start": "nodemon ./index.js"
     }
 }

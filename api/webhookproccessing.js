@@ -2,8 +2,8 @@ const   { WebhookClient } = require('dialogflow-fulfillment');
 const   { Carousel } = require('actions-on-google');
 
 // processing by function
-const {setMappingReser} = require('./makeflight');
-const   {getTicket, makeChange} = require('./makechange');
+const   {setMappingReser} = require('./makeflight');
+const   {setMappingChange} = require('./makechange');
 
 process.env.DEBUG = 'dialogflow:debug'; // enables lib debugging statements
 
@@ -27,8 +27,8 @@ module.exports = {
 
     
         // change proceesing
-        intentMap.set('user.getticket', getTicket);
-        intentMap.set('user.makechange', makeChange);
+        setMappingChange(intentMap);
+        
         
         agent.handleRequest(intentMap);
     }

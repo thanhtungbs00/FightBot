@@ -1,13 +1,14 @@
-const { WebhookClient } = require('dialogflow-fulfillment');
-//const { Carousel } = require('actions-on-google');
+const   { WebhookClient } = require('dialogflow-fulfillment');
+const   { Carousel } = require('actions-on-google');
 
 // processing by function
 const {setMappingReser} = require('./makeflight');
+const   {getTicket, makeChange} = require('./makechange');
 
 process.env.DEBUG = 'dialogflow:debug'; // enables lib debugging statements
 
 function welcome(agent) {
-    agent.add(`Welcome to my agent!`);
+    agent.add(`Hello, welcome to TL travel agency, how may I help you !`);
 }
 
 function fallback(agent) {
@@ -23,8 +24,12 @@ module.exports = {
         
         intentMap.set('Default Welcome Intent', welcome);
         intentMap.set('Default Fallback Intent', fallback);
-        
 
+    
+        // change proceesing
+        intentMap.set('user.getticket', getTicket);
+        intentMap.set('user.makechange', makeChange);
+        
         agent.handleRequest(intentMap);
     }
 }

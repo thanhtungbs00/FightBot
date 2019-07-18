@@ -4,7 +4,7 @@ const   { Carousel } = require('actions-on-google');
 // processing by function
 const   {setMappingReser} = require('./makeflight');
 const   {setMappingChange} = require('./makechange');
-const {setMappingInfo} = require('./flightInfo');
+const setMappingInfo = require('./flightInfo');
 
 const   {getTicket} = require('./changeinfo');
 process.env.DEBUG = 'dialogflow:debug'; // enables lib debugging statements
@@ -23,6 +23,7 @@ module.exports = {
         const agent = new WebhookClient({request: req, response: res});
         let intentMap = new Map();
         setMappingReser(intentMap);
+        setMappingInfo(intentMap);
         
         intentMap.set('Default Welcome Intent', welcome);
         intentMap.set('Default Fallback Intent', fallback);

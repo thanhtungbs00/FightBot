@@ -8,7 +8,8 @@ const FlightSchema = new Schema({
     dtime: Date, 
     atime: Date,
     tseat: Number,
-    bseat: Number
+    bseat: Number,
+    fee: Number
 });
 
 const Flight = mongoose.model('flights', FlightSchema);

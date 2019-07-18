@@ -39,7 +39,8 @@ function findFlight(agent, src, dst, time) {
           _atime.setHours(_dtime.getHours() + 1);
           var _tseat = randomNum(100, 200);
           var _bseat = randomNum(0, 100);
-          var _f = {flightId: _flightId, src: src, dst: dst, tseat: _tseat, bseat: _bseat, dtime: _dtime, atime: _atime};
+          var _fee = randomNum(500, 3000)*1000; 
+          var _f = {flightId: _flightId, src: src, dst: dst, tseat: _tseat, bseat: _bseat, dtime: _dtime, atime: _atime, fee: _fee};
           flights.push(_f);
           var fObj = new Flight(_f);
           fObj.save((err, obj) => {
@@ -124,9 +125,11 @@ function selectFlight(agent) {
         ...agent.getContext('makereservation-followup').parameters
       }
     });
-    // TODO: Show information, ask for confirmation
-    agent.add(`Select flight ${chflight.flightId}`);
-    agent.add(`Flight will start at ${chflight.src} in ${dateformat(chflight.dtime, "yyyy-mm-dd h:MM:ss")} and arrive at ${chflight.dst} in ${dateformat(chflight.atime, "yyyy-mm-dd h:MM:ss")}`);
+    // Show information, ask for confirmation
+    var msg = `Flight ${chflight.flightId} will start at ${chflight.src} in ${dateformat(chflight.dtime, "yyyy-mm-dd h:MM:ss")} `
+      + `and arrive at ${chflight.dst} in ${dateformat(chflight.atime, "yyyy-mm-dd h:MM:ss" )} \nFee: ${chflight.fee}`;
+    agent.add(msg);
+
     agent.add(`Would you like to confirm this reservation?`);
     var params = [];
     if (agent.getContext('makereservation-selectnumber-followup') != undefined) {

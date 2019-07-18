@@ -169,8 +169,6 @@ function confirmFlight(agent) {
   })
   
   
-  
-  
 }
 
 

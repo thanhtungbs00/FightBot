@@ -4,6 +4,7 @@ const   { Carousel } = require('actions-on-google');
 // processing by function
 const   {setMappingReser} = require('./makeflight');
 const   {setMappingChange} = require('./makechange');
+const {setMappingInfo} = require('./flightInfo');
 
 const   {getTicket} = require('./changeinfo');
 process.env.DEBUG = 'dialogflow:debug'; // enables lib debugging statements

@@ -1,5 +1,5 @@
 const   { WebhookClient } = require('dialogflow-fulfillment');
-const   { Carousel } = require('actions-on-google');
+// const   { Carousel } = require('actions-on-google');
 
 // processing by function
 const   {setMappingReser} = require('./makeflight');
@@ -30,10 +30,8 @@ module.exports = {
         // change proceesing
         intentMap.set('getTicket', getTicket);
 
-    
         // change proceesing
         setMappingChange(intentMap);
-        
         
         agent.handleRequest(intentMap);
     }

@@ -1,15 +1,17 @@
-const   { Card, Suggestion, Button } = require('dialogflow-fulfillment');
-const   Flight = require('../models/Flight');
+// const   { Text, Card, Image, Suggestion, Payload } = require('dialogflow-fulfillment');
+// const   { BasicCard, Button } = require('actions-on-google');
+
+const   { Flight } = require('../models/Flight');
 const   Ticket = require('../models/Ticket');
 
 async function getTicket(agent) {
     let passcode = agent.parameters.any;
-    let ticket;
     try{
-        ticket = await Ticket.findOne({'passcode': passcode});
-        if (ticket){
-            console.log(ticket);
+        let ticket = await Ticket.findOne({'passcode': passcode});
+        let flight = await Flight.findOne({'flightId': passcode});
+        if (ticket && flight){
             agent.add(`okay, your ticket is ${passcode}`);
+            agent.add(`Your flight depart at ${flight.src} to ${flight.des}`)
         }
         else {
             agent.add("I don't find your passcode in transaction history. Can you give me again");

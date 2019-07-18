@@ -1,5 +1,5 @@
 const   { WebhookClient } = require('dialogflow-fulfillment');
-const   { Carousel } = require('actions-on-google');
+// const   { Carousel } = require('actions-on-google');
 
 // processing by function
 const   {setMappingReser} = require('./makeflight');
@@ -25,10 +25,8 @@ module.exports = {
         intentMap.set('Default Welcome Intent', welcome);
         intentMap.set('Default Fallback Intent', fallback);
 
-    
         // change proceesing
         setMappingChange(intentMap);
-        
         
         agent.handleRequest(intentMap);
     }

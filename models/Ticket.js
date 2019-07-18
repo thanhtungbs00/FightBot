@@ -12,7 +12,9 @@ const ticketSchema = new Schema({
 	description: {
 		type: String
     },
-    flightId: String,
+    flightId: {
+        type: String
+    },
     passcode: {
         type: Number
     }

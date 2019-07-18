@@ -1,17 +1,25 @@
-// const   { Text, Card, Image, Suggestion, Payload } = require('dialogflow-fulfillment');
+const   { Text, Card, Image, Suggestion, Payload } = require('dialogflow-fulfillment');
 // const   { BasicCard, Button } = require('actions-on-google');
 
-const   { Flight } = require('../models/Flight');
-const   Ticket = require('../models/Ticket');
+const   { Flight } = require('../../models/Flight');
+const   Ticket = require('../../models/Ticket');
+
+const   { getTime } = require('./test_utils');
 
 async function getTicket(agent) {
-    let passcode = agent.parameters.any;
+    let code = agent.parameters.any;
     try{
-        let ticket = await Ticket.findOne({'passcode': passcode});
-        let flight = await Flight.findOne({'flightId': passcode});
-        if (ticket && flight){
-            agent.add(`okay, your ticket is ${passcode}`);
-            agent.add(`Your flight depart at ${flight.src} to ${flight.des}`)
+        let ticket = await Ticket.findOne({'passcode': code});
+        if (ticket){
+            let flight = await Flight.findOne({'flightId': ticket.flightId});
+            // console.log(flight);
+            agent.add(`okay, your ticket is ${ticket.flightId}`);
+            agent.add(`Your flight departs at ${flight.src} to ${flight.dst}`)
+            agent.add(`Your filght departs ` + getTime(flight.dtime));
+            
+            agent.add(new Suggestion('Change date'));
+            agent.add(new Suggestion('Cancel my flight !'));
+            agent.add(new Suggestion('Change my flight in same day'));
         }
         else {
             agent.add("I don't find your passcode in transaction history. Can you give me again");
@@ -29,12 +37,17 @@ function makeChange (agent){
         'name':'makechange',
         'lifespan': 5,
         'parameters':{}
-      });
+    });
+}
+
+function cancelFlight(agent){
+    agent.add("I canceled your ticket~");
 }
 
 function setMappingChange(intentMap) {
     intentMap.set('user.getticket', getTicket);
     intentMap.set('user.makechange', makeChange);
+    intentMap.set('user.makechange.cancel', cancelFlight);
 }
 
 module.exports = {

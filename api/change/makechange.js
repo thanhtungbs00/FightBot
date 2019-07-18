@@ -7,6 +7,14 @@ const   Ticket = require('../../models/Ticket');
 const   { getTime } = require('./test_utils');
 
 async function getTicket(agent) {
+    let context = agent.getContext('makechange');
+    if (context==null){
+        agent.setContext({
+            'name':'makechange',
+            'lifespan': 5,
+            'parameters':{}
+        });
+    }
     let code = agent.parameters.any;
     try{
         let ticket = await Ticket.findOne({'passcode': code});
@@ -40,14 +48,75 @@ function makeChange (agent){
     });
 }
 
-function cancelFlight(agent){
-    agent.add("I canceled your ticket~");
+function cancelFlight (agent){
+    // get param, context
+    let context = agent.getContext('makechange');
+    console.log(context);
+
+    if (context!=null){
+        let param = agent.getContext('makechange').parameters;
+        if (param == undefined){
+            return makeChange(agent);
+        }
+        agent.setContext({
+            'name':'makechange.cancel',
+            'lifespan': 1,
+            'parameters':{
+                code: param.any
+            }
+        });
+        agent.add("Are you sure cancel your ticket ? ~");
+        return;
+    }
+    return makeChange(agent);
+}
+
+async function cancelYes(agent) {
+    let context = agent.getContext('makechange.cancel');
+    if (context == null) {
+        agent.add("please try again !");
+        return;
+    }
+    try{
+        let code = agent.getContext('makechange.cancel').parameters.code;
+        
+        // delete ticket in database
+        await Ticket.deleteOne({'passcode': code});
+
+        // remove context
+        agent.setContext({
+            'name':'makechange',
+            'lifespan': -1,
+            'parameters':{}
+        });
+        agent.add(`We have cancel your ticket`);
+    } catch(e) {
+        agent.add(`Have some issue, you can try again`);
+    }
+    
+}
+
+function cancelNo(agent) {
+    let context = agent.getContext('makechange.cancel');
+    if (context == null) {
+        agent.add("please try again !");
+        return;
+    }
+    // remove context
+    agent.setContext({
+        'name':'makechange',
+        'lifespan': -1,
+        'parameters':{}
+    });
+    agent.add(`Okay, I got it. Do you need more my support~`);
 }
 
 function setMappingChange(intentMap) {
     intentMap.set('user.getticket', getTicket);
     intentMap.set('user.makechange', makeChange);
     intentMap.set('user.makechange.cancel', cancelFlight);
+    intentMap.set('user.makechange.cancel - yes', cancelYes);
+    intentMap.set('user.makechange.cancel - no', cancelNo);
 }
 
 module.exports = {

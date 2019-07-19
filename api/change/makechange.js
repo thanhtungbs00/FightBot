@@ -6,21 +6,28 @@ const   Ticket = require('../../models/Ticket');
 
 const   { getTime } = require('./test_utils');
 
+// global context 
+const makechangeContext = {
+    'name':'makechange',
+    'lifespan': 5,
+    'parameters':{}
+}
+
 async function getTicket(agent) {
-    let context = agent.getContext('makechange');
-    if (context==null){
-        agent.setContext({
-            'name':'makechange',
-            'lifespan': 5,
-            'parameters':{}
-        });
+    let context = agent.context.get('makechange');
+    if (context==null || context==undefined){
+        agent.add(`Let me know what you want to do!`);
+        return ;
     }
-    let code = agent.parameters.any;
+    let code = agent.parameters.code;
+    if (code==null || code == undefined){
+        return makeChange(agent);
+    }
     try{
         let ticket = await Ticket.findOne({'passcode': code});
         if (ticket){
             let flight = await Flight.findOne({'flightId': ticket.flightId});
-            // console.log(flight);
+
             agent.add(`okay, your ticket is ${ticket.flightId}`);
             agent.add(`Your flight departs at ${flight.src} to ${flight.dst}`)
             agent.add(`Your filght departs ` + getTime(flight.dtime));
@@ -38,57 +45,53 @@ async function getTicket(agent) {
     }
 }
 
-function makeChange (agent){
+async function makeChange (agent){
     agent.add(`Okay, Can you give me some information of your ticket like your ID or passcode flight.`);
-    
-    agent.setContext({
-        'name':'makechange',
-        'lifespan': 5,
-        'parameters':{}
-    });
+
+    agent.context.set(makechangeContext);
+    return ;
 }
 
 function cancelFlight (agent){
     // get param, context
-    let context = agent.getContext('makechange');
+    let context = agent.context.get('makechange');
     console.log(context);
 
     if (context!=null){
-        let param = agent.getContext('makechange').parameters;
+        let param = agent.context.get('makechange').parameters;
         if (param == undefined){
             return makeChange(agent);
         }
-        agent.setContext({
+        agent.context.set({
             'name':'makechange.cancel',
             'lifespan': 1,
             'parameters':{
-                code: param.any
+                code: param.code
             }
         });
         agent.add("Are you sure cancel your ticket ? ~");
+        agent.add(new Suggestion('Yes'));
+        agent.add(new Suggestion('No'));
         return;
     }
     return makeChange(agent);
 }
 
 async function cancelYes(agent) {
-    let context = agent.getContext('makechange.cancel');
+    let context = agent.context.get('makechange.cancel');
     if (context == null) {
         agent.add("please try again !");
         return;
     }
     try{
-        let code = agent.getContext('makechange.cancel').parameters.code;
+        let code = agent.context.get('makechange.cancel').parameters.code;
         
         // delete ticket in database
         await Ticket.deleteOne({'passcode': code});
 
         // remove context
-        agent.setContext({
-            'name':'makechange',
-            'lifespan': -1,
-            'parameters':{}
-        });
+        agent.context.delete('makechange');
+
         agent.add(`We have cancel your ticket`);
     } catch(e) {
         agent.add(`Have some issue, you can try again`);
@@ -97,18 +100,41 @@ async function cancelYes(agent) {
 }
 
 function cancelNo(agent) {
-    let context = agent.getContext('makechange.cancel');
+    let context = agent.context.get('makechange.cancel');
     if (context == null) {
         agent.add("please try again !");
         return;
     }
     // remove context
-    agent.setContext({
-        'name':'makechange',
-        'lifespan': -1,
-        'parameters':{}
-    });
+    agent.context.delete('makechange');
+
     agent.add(`Okay, I got it. Do you need more my support~`);
+}
+
+function changedate(agent){
+    let context = agent.context.get('makechange');
+    console.log(context);
+    if (context==undefined || context==null) {
+        agent.add(`Sorry, I can't know what you want to do! Can you say again clearly ?`);
+        return ;
+    }
+    let param = agent.context.get('makechange').parameters;
+    let date, code;
+    code = param.code;
+    date = param.date;
+    if (!date) {
+        agent.add('Which day do you want to change ?');
+        return ;
+    }
+    if (!code){
+        agent.add('Let me know your passcode ticket!');
+        return ;
+    }
+    
+    let day = date.getDate();
+    console.log(date.toString());
+    console.log(day);
+    agent.add(`ngao thao`);
 }
 
 function setMappingChange(intentMap) {
@@ -117,76 +143,9 @@ function setMappingChange(intentMap) {
     intentMap.set('user.makechange.cancel', cancelFlight);
     intentMap.set('user.makechange.cancel - yes', cancelYes);
     intentMap.set('user.makechange.cancel - no', cancelNo);
+    intentMap.set('user.makechange.date', changedate);
 }
 
 module.exports = {
     setMappingChange
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// function other(agent) {
-//     agent.add(`This message is from Dialogflow's Cloud Functions for Firebase editor!`);
-//     agent.add(new Card({
-//         title: `Title: this is a card title`,
-//         imageUrl: imageUrl,
-//         text: `This is the body text of a card.  You can even use line\n  breaks and emoji! 💁`,
-//         buttonText: 'This is a button',
-//         buttonUrl: linkUrl
-//       })
-//     );
-//     agent.add(new Suggestion(`Quick Reply`));
-//     agent.add(new Suggestion(`Suggestion`));
-//     agent.setContext({ name: 'weather', lifespan: 2, parameters: { city: 'Rome' }});
-//   }
-
-// function flight(agent) {
-//     const city = agent.parameters['geo-city'];
-//     const time = agent.parameters['time'];
-//     const gotCity = city.length > 0;
-//     const gotTime = time.length > 0;
-
-//     if(gotCity && gotTime) {
-//         agent.add(`Nice, you want to fly to ${city} at ${time}.`);
-//     } else if (gotCity && !gotTime) {
-//         agent.add('Let me know which time you want to fly');
-//     } else if (gotTime && !gotCity) {
-//         agent.add('Let me know which city you want to fly to');
-//     } else {
-//         agent.add('Let me know which city and time you want to fly');
-//     }
-// }
-
-
-// let ticket;
-//     try {
-//         ticket = new Ticket({
-//             username: "Cao Thanh Tung",
-//             email: "cs.tungthanh@gmail.com",
-//             day: "10-7-2018",
-//             description: "Come back home with girlfriend",
-//             passcode: "VJ5498"
-//         });
-//         console.log(ticket);
-        
-//         // save down database
-//         //Ticket.create(ticket);
-
-//     } catch (e){
-//         //console.log(e);
-//         alert(`Cannot connect with database`);
-//         return;
-//     }

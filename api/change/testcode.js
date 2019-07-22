@@ -1,59 +1,3 @@
-const   { Card, Suggestion, Button } = require('dialogflow-fulfillment');
-const   Flight = require('../models/Flight');
-const   Ticket = require('../models/Ticket');
-
-async function getTicket(agent) {
-    let passcode = agent.parameters.any;
-    let ticket;
-    try{
-        ticket = await Ticket.findOne({'passcode': passcode});
-        if (ticket){
-            console.log(ticket);
-            agent.add(`okay, your ticket is ${passcode}`);
-        }
-        else {
-            agent.add("I don't find your passcode in transaction history. Can you give me again");
-        }
-    } catch (e) {
-        console.log(e);
-        return;
-    }
-}
-
-function makeChange (agent){
-    agent.add(`Okay, Can you give me some information of your ticket like your ID or passcode flight.`);
-    
-    agent.setContext({
-        'name':'makechange',
-        'lifespan': 5,
-        'parameters':{}
-      });
-}
-
-function setMappingChange(intentMap) {
-    intentMap.set('user.getticket', getTicket);
-    intentMap.set('user.makechange', makeChange);
-}
-
-module.exports = {
-    setMappingChange
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // function other(agent) {
 //     agent.add(`This message is from Dialogflow's Cloud Functions for Firebase editor!`);
 //     agent.add(new Card({
@@ -90,19 +34,17 @@ module.exports = {
 // let ticket;
 //     try {
 //         ticket = new Ticket({
-//             username: "Cao Thanh Tung",
 //             email: "cs.tungthanh@gmail.com",
-//             day: "10-7-2018",
+//             day: Date.now(),
 //             description: "Come back home with girlfriend",
-//             passcode: "VJ5498"
+//             flightId: "VN8261"
 //         });
 //         console.log(ticket);
         
 //         // save down database
-//         //Ticket.create(ticket);
+//         Ticket.create(ticket);
 
 //     } catch (e){
-//         //console.log(e);
 //         alert(`Cannot connect with database`);
 //         return;
 //     }

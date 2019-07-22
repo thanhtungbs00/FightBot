@@ -202,5 +202,6 @@ function setMappingReser(intentMap) {
 }
 
 module.exports = {
-  setMappingReser
+  setMappingReser,
+  findFlight
 }

@@ -63,19 +63,23 @@ function makeReservation(agent) {
     var dst = agent.parameters.flightdest2;
     var time = agent.parameters.date;
 
-    agent.setContext({
-      'name': 'MakeReservation-followup',
-      'lifespan': agent.getContext('makereservation-followup').lifespan + 1,
-      'parameters': {
-        ...agent.getContext('makereservation-followup').parameters,
-        flights: flights,
-        src: src,
-        dst: dst,
-        time: time
-      }
-    });
+
+
+    
 
     var callback = (flights) => {
+      agent.context.set({
+        'name': 'MakeReservation-followup',
+        'lifespan': agent.context.get('makereservation-followup').lifespan + 1,
+        'parameters': {
+          ...agent.context.get('makereservation-followup').parameters,
+          flights: flights,
+          src: src,
+          dst: dst,
+          time: time
+        }
+      });
+
       for (var i = 0 ; i < flights.length; ++i) {
         var f = flights[i];
         var dtime = dateformat(f.dtime, timeFormat);
@@ -107,7 +111,8 @@ function selectFlightFallback(agent) {
 function selectFlight(agent) {
     
     var flightId = agent.parameters.flightId.toUpperCase();
-    var flights = agent.getContext('makereservation-followup').parameters.flights;
+    console.log(agent.context);
+    var flights = agent.context.get('makereservation-followup').parameters.flights;
     var valid = false;
     var chflight;
     for (var i = 0 ; i < flights.length ; ++i) {
@@ -119,11 +124,11 @@ function selectFlight(agent) {
     if (!valid) {
       return selectFlightFallback(agent);
     }
-    agent.setContext({
+    agent.context.set({
       'name': 'MakeReservation-followup',
       'lifespan': -1,
       'parameters': {
-        ...agent.getContext('makereservation-followup').parameters
+        ...agent.context.get('makereservation-followup').parameters
       }
     });
     // Show information, ask for confirmation
@@ -133,26 +138,26 @@ function selectFlight(agent) {
 
     agent.add(`Would you like to confirm this reservation?`);
     var params = [];
-    if (agent.getContext('makereservation-selectnumber-followup') != undefined) {
-      params = {...agent.getContext('makereservation-selectnumber-followup').parameters};
+    if (agent.context.get('makereservation-selectnumber-followup') != undefined) {
+      params = {...agent.context.get('makereservation-selectnumber-followup').parameters};
     }
-    agent.setContext({
+    agent.context.set({
       'name': 'makereservation-selectnumber-followup',
       'lifespan': 2,
       'parameters': {...params, flightId: chflight.flightId}
     })
-    agent.setContext({
+    agent.context.set({
       'name': 'MakeReservation-followup',
       'lifespan': -1,
       'parameters': {
-        ...agent.getContext('makereservation-followup').parameters
+        ...agent.context.get('makereservation-followup').parameters
       }
     });
 
 } 
 
 function confirmFlight(agent) {
-  var context = agent.getContext('makereservation-selectnumber-followup');
+  var context = agent.context.get('makereservation-selectnumber-followup');
   var flightId = 'emp';
   console.log(context);
   if (context != undefined) {
@@ -160,7 +165,7 @@ function confirmFlight(agent) {
   }
   let tick = new Ticket({email: agent.parameters.email, day: new Date(), description: 'Empty', flightId: flightId});
   return tick.save().then((obj) => {
-    agent.setContext({
+    agent.context.set({
       'name': 'makereservation-selectnumber-followup',
       'lifespan': -1
     })
@@ -174,10 +179,10 @@ function confirmFlight(agent) {
 
 
 function confirmFlightNo(agent) {
-  // var flightId = agent.getContext('makereservation-followup').parameters.flightId;
-  // var available_flights = agent.getContext('makereservation-followup').parameters.flights;
+  // var flightId = agent.context.get('makereservation-followup').parameters.flightId;
+  // var available_flights = agent.context.get('makereservation-followup').parameters.flights;
   agent.add('Cancelled. Thank you');
-  agent.setContext({
+  agent.context.set({
     'name': 'makereservation-selectnumber-followup',
     'lifespan': -1
   })
@@ -185,7 +190,7 @@ function confirmFlightNo(agent) {
 }
 
 function selectFlightRepeat(agent) {
-  var params = agent.getContext('makereservation-followup').parameters;
+  var params = agent.context.get('makereservation-followup').parameters;
   var src = params.flightdest;
   var dst = params.flightdest2;
   var time = params.date;

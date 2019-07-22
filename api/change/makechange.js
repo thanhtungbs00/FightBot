@@ -32,6 +32,20 @@ async function getTicket(agent) {
             agent.add(`Your flight departs at ${flight.src} to ${flight.dst}`)
             agent.add(`Your filght departs ` + getTime(flight.dtime));
             
+            console.log(flight.dtime);
+            // set information context 
+            agent.context.set({
+                'name':'makechange',
+                'lifespan': context.lifespan-1,
+                'parameters':{
+                    code: code,
+                    flightId: ticket.flightId,
+                    src: flight.src,
+                    dst: flight.dst,
+                    dtime: flight.dtime
+                }
+            });
+
             agent.add(new Suggestion('Change date'));
             agent.add(new Suggestion('Cancel my flight !'));
             agent.add(new Suggestion('Change my flight in same day'));
@@ -130,10 +144,6 @@ function changedate(agent){
         agent.add('Let me know your passcode ticket!');
         return ;
     }
-    
-    let day = date.getDate();
-    console.log(date.toString());
-    console.log(day);
     agent.add(`ngao thao`);
 }
 

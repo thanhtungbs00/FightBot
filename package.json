@@ -5,7 +5,7 @@
     "main": "index.js",
     "author": "Team Intership",
     "dependencies": {
-        "actions-on-google": "^2.2.0",
+        "actions-on-google": "^2.9.1",
         "body-parser": "^1.18.3",
         "dateformat": "^3.0.3",
         "dialogflow-fulfillment": "^0.6.1",

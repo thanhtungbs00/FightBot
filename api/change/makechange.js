@@ -12,7 +12,7 @@ const timeFormat = "dd-mm-yyy h:MM:ss";
 // global context 
 const makechangeContext = {
     'name':'makechange',
-    'lifespan': 5,
+    'lifespan': 10,
     'parameters':{}
 }
 
@@ -179,6 +179,10 @@ function changedate(agent){
 
 async function selectFlight(agent) {
     var context = agent.context.get('makechange');
+    if (!context){
+        agent.add('Something wrong');
+        return;
+    }
     var flightID = context.parameters.flightID;
     var code = context.parameters.code;
 
@@ -204,26 +208,60 @@ async function selectFlight(agent) {
         return ;
     }
     agent.add(`Okay, I have changed your ticket and your passcode is ${code}`);
+    agent.context.delete('makechange');
+    agent.context.delete('usermakechange-followup');
+    agent.context.delete('usermakechange-place-followup');
 }
 
 function makeplace(agent) {
     var context = agent.context.get('makechange');
-    
-    // paste parameters
-    let param = agent.context.get('makechange').parameters;
-    let code = param.code;
-    let src = param.src;
-    let dst = param.dst;
-    let date = param.date;
-
+    let code = context.parameters.code;
     let nsrc = agent.parameters.nsrc;
     let ndes = agent.parameters.ndes;
+    let ntime = agent.parameters.ndate;
 
-    console.log(nsrc);
+    // if(nsrc && ndes && ntime) {
+    //     agent.add(`Nice, you want to fly from ${nsrc} to ${ndes} at ${ntime}.`); 
+    // } else if (nsrc && !ndes && ntime) {
+    //     agent.add('Please tell me the destination');
+    //     return ;
+    // } else if (ndes && !nsrc && ntime) {
+    //     agent.add('Where do you want to start your flight ?');
+    //     return ;
+    // } else if (!ntime && nsrc && ndes){
+    //     agent.add('When do you want to start ?');
+    //     return ;
+    // } else {
+    //     agent.add('Let me know which city and time you want to fly');
+    //     return ;
+    // }
+
+    // def callback to use search filght
+    var callback = (flights) => {
+        for (var i = 0 ; i < flights.length; ++i) {
+            var f = flights[i];
+            var dtime = dateformat(f.dtime, timeFormat);
+            var atime = dateformat(f.atime, timeFormat);
+            if (i == 0) {
+                agent.add('Here are some flight for you!');
+            }
+          
+            agent.add(new Card({
+                title: `Flight ${f.flightId}`,
+                imageUrl: 'https://ichef.bbci.co.uk/news/912/cpsprodpb/11BF/production/_107934540_gettyimages-155439315.jpg',
+                text: `${f.src} (${dtime}) -> ${f.dst} (${atime})`,
+                buttonText: `${f.flightId}`,
+                buttonUrl: 'https://assistant.google.com/'
+            }));
+        }
+    }
+
+    return findFlight(nsrc, ndes, ntime, callback);
+
 }
 
 function setMappingChange(intentMap) {
-    intentMap.set('user.getticket', getTicket);
+    intentMap.set('user.makechange - getticket', getTicket);
     intentMap.set('user.makechange', makeChange);
     intentMap.set('user.makechange.cancel', cancelFlight);
     intentMap.set('user.makechange.cancel - yes', cancelYes);
@@ -231,6 +269,7 @@ function setMappingChange(intentMap) {
     intentMap.set('user.makechange.date', changedate);
     intentMap.set('user.makechange.date - select', selectFlight);
     intentMap.set('user.makechange - place', makeplace);
+    intentMap.set('user.makechange - place - select', selectFlight);
 }
 
 module.exports = {

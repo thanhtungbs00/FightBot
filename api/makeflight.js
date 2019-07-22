@@ -5,15 +5,14 @@ const {Flight, FlightSchema} = require('../models/Flight');
 const Ticket = require('../models/Ticket');
 
 
+const timeFormat = "dd-mm-yyy h:MM:ss";
 
 function randomNum(a, b) {
   return Math.floor(Math.random() * (b - a)) + a;
 }
 
-function findFlight(agent, src, dst, time) {
+function findFlight(src, dst, time, callback) {
   // Get flights from databases
-
-
   var stime = new Date(time);
   stime.setHours(stime.getHours());
   var etime = new Date(time);
@@ -51,38 +50,7 @@ function findFlight(agent, src, dst, time) {
         }
       }
 
-      agent.setContext({
-        'name': 'MakeReservation-followup',
-        'lifespan': agent.getContext('makereservation-followup').lifespan + 1,
-        'parameters': {
-          ...agent.getContext('makereservation-followup').parameters,
-          flights: flights,
-          src: src,
-          dst: dst,
-          time: time
-        }
-      });
-
-
-        for (var i = 0 ; i < flights.length; ++i) {
-          var f = flights[i];
-          var dtime = dateformat(f.dtime, "yyyy-mm-dd h:MM:ss");
-          var atime = dateformat(f.atime, "yyyy-mm-dd h:MM:ss");
-          if (i == 0) {
-            agent.add('Here are some flight for you!');
-          }
-          
-            agent.add(new Card({
-              title: `Flight ${f.flightId}`,
-              imageUrl: 'https://developers.google.com/actions/assistant.png',
-              text: `${f.src} (${dtime}) -> ${f.dst} (${atime})`,
-              buttonText: 'This is a button',
-              buttonUrl: 'https://assistant.google.com/'
-            })
-          );
-      }
-
-      
+      callback(flights);
     }
   ).catch( err => {
     console.log(err);
@@ -94,14 +62,47 @@ function makeReservation(agent) {
     var src = agent.parameters.flightdest;
     var dst = agent.parameters.flightdest2;
     var time = agent.parameters.date;
-    return findFlight(agent, src, dst, time);
-    
-    
+
+    agent.setContext({
+      'name': 'MakeReservation-followup',
+      'lifespan': agent.getContext('makereservation-followup').lifespan + 1,
+      'parameters': {
+        ...agent.getContext('makereservation-followup').parameters,
+        flights: flights,
+        src: src,
+        dst: dst,
+        time: time
+      }
+    });
+
+    var callback = (flights) => {
+      for (var i = 0 ; i < flights.length; ++i) {
+        var f = flights[i];
+        var dtime = dateformat(f.dtime, timeFormat);
+        var atime = dateformat(f.atime, timeFormat);
+        if (i == 0) {
+          agent.add('Here are some flight for you!');
+        }
+        
+          agent.add(new Card({
+            title: `Flight ${f.flightId}`,
+            imageUrl: 'https://developers.google.com/actions/assistant.png',
+            text: `${f.src} (${dtime}) -> ${f.dst} (${atime})`,
+            buttonText: 'This is a button',
+            buttonUrl: 'https://assistant.google.com/'
+          })
+        );
+      }
+    }
+    return findFlight(src, dst, time, callback);
 }
 
 function selectFlightFallback(agent) {
   agent.add("Sorry. I don't understand your request");
 }
+
+
+
 
 function selectFlight(agent) {
     

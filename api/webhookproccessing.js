@@ -1,15 +1,20 @@
 const   { WebhookClient } = require('dialogflow-fulfillment');
 // const   { Carousel } = require('actions-on-google');
-
+const { Card, Suggestion} = require('dialogflow-fulfillment');
 // processing by function
 const   {setMappingReser} = require('./makeflight');
 const setMappingInfo = require('./flightInfo');
 const   {setMappingChange} = require('./change/makechange');
 
+
+
 process.env.DEBUG = 'dialogflow:debug'; // enables lib debugging statements
 
 function welcome(agent) {
     agent.add(`Hello, welcome to TL travel agency, how may I help you !`);
+    agent.add(new Suggestion('I want to book a flight'));
+    agent.add(new Suggestion('I want to check ticket information'));
+
 }
 
 function fallback(agent) {

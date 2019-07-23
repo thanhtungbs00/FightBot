@@ -69,10 +69,10 @@ function makeReservation(agent) {
 
     var callback = (flights) => {
       agent.context.set({
-        'name': 'MakeReservation-followup',
-        'lifespan': agent.context.get('makereservation-followup').lifespan + 1,
+        'name': 'MakeReservation-followup-2',
+        'lifespan': agent.context.get('makereservation-followup-2').lifespan + 1,
         'parameters': {
-          ...agent.context.get('makereservation-followup').parameters,
+          ...agent.context.get('makereservation-followup-2').parameters,
           flights: flights,
           src: src,
           dst: dst,
@@ -110,9 +110,9 @@ function selectFlightFallback(agent) {
 
 function selectFlight(agent) {
     
-    var flightId = agent.parameters.flightId.toUpperCase();
+    var flightId = agent.parameters.flightId. toUpperCase();
     console.log(agent.context);
-    var flights = agent.context.get('makereservation-followup').parameters.flights;
+    var flights = agent.context.get('makereservation-followup-2').parameters.flights;
     var valid = false;
     var chflight;
     for (var i = 0 ; i < flights.length ; ++i) {
@@ -125,10 +125,10 @@ function selectFlight(agent) {
       return selectFlightFallback(agent);
     }
     agent.context.set({
-      'name': 'MakeReservation-followup',
+      'name': 'makereservation-followup-2',
       'lifespan': -1,
       'parameters': {
-        ...agent.context.get('makereservation-followup').parameters
+        ...agent.context.get('makereservation-followup-2').parameters
       }
     });
     // Show information, ask for confirmation
@@ -147,10 +147,10 @@ function selectFlight(agent) {
       'parameters': {...params, flightId: chflight.flightId}
     })
     agent.context.set({
-      'name': 'MakeReservation-followup',
+      'name': 'makereservation-followup-2',
       'lifespan': -1,
       'parameters': {
-        ...agent.context.get('makereservation-followup').parameters
+        ...agent.context.get('makereservation-followup-2').parameters
       }
     });
 
@@ -179,8 +179,8 @@ function confirmFlight(agent) {
 
 
 function confirmFlightNo(agent) {
-  // var flightId = agent.context.get('makereservation-followup').parameters.flightId;
-  // var available_flights = agent.context.get('makereservation-followup').parameters.flights;
+  // var flightId = agent.context.get('makereservation-followup-2').parameters.flightId;
+  // var available_flights = agent.context.get('makereservation-followup-2').parameters.flights;
   agent.add('Cancelled. Thank you');
   agent.context.set({
     'name': 'makereservation-selectnumber-followup',
@@ -190,7 +190,7 @@ function confirmFlightNo(agent) {
 }
 
 function selectFlightRepeat(agent) {
-  var params = agent.context.get('makereservation-followup').parameters;
+  var params = agent.context.get('makereservation-followup-2').parameters;
   var src = params.flightdest;
   var dst = params.flightdest2;
   var time = params.date;
@@ -203,6 +203,7 @@ function setMappingReser(intentMap) {
   intentMap.set('Make Reservation - select.number', selectFlight)
   intentMap.set('Make Reservation - select.number - email', confirmFlight);
   intentMap.set('Make Reservation - select.number - no', confirmFlightNo);
+  intentMap.set('Make Reservation - select.number - repeat', selectFlightRepeat);
   intentMap.set('Make Reservation - repeat', selectFlightRepeat);
 }
 

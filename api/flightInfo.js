@@ -40,7 +40,7 @@ function getInformation(ticketId, callback) {
 
 
 function setMappingInfo(intentMap) {
-    intentMap.set('Flight Info', getFlightInfo);
+    intentMap.set('Ticket Info - select.number', getFlightInfo);
   }
 
 module.exports = setMappingInfo;

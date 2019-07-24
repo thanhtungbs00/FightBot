@@ -97,6 +97,13 @@ function makeReservation(agent) {
           })
         );
       }
+
+      for (var i = 0 ; i < flights.length; ++i) {
+        var f = flights[i];
+        var dtime = dateformat(f.dtime, timeFormat);
+        var atime = dateformat(f.atime, timeFormat);
+          agent.add(new Suggestion(`Flight ${f.flightId}`));
+      }
     }
     return findFlight(src, dst, time, callback);
 }
@@ -137,6 +144,8 @@ function selectFlight(agent) {
     agent.add(msg);
 
     agent.add(`Would you like to confirm this reservation?`);
+    agent.add(new Suggestion('Yes'));
+    agent.add(new Suggestion('No'));
     var params = [];
     if (agent.context.get('makereservation-selectnumber-followup') != undefined) {
       params = {...agent.context.get('makereservation-selectnumber-followup').parameters};

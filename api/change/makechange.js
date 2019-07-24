@@ -187,7 +187,7 @@ async function selectFlight(agent) {
     var code = context.parameters.code;
 
     try{
-        if (flightID.length > 10){
+        if (flightID.length > 10 || flightID.length < 2){
             agent.add(`Something wrong`);
             return;
         }
